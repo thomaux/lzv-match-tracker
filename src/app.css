@@ -1,0 +1,9 @@
+body {
+    font: 16px "Century Gothic", Futura, sans-serif;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}

@@ -1,4 +1,7 @@
 import { Component } from 'react';
+import { Clock } from './components/clock';
+import './app.css';
+import { Score } from './components/score';
 
 interface AppState {
     seconds: number;
@@ -17,7 +20,7 @@ type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
 
 export class App extends Component<unknown, AppState> {
     timer: NodeJS.Timeout | null;
-    readonly maxSeconds = 5;
+    readonly maxSeconds = 1500; // 25mins
 
     constructor(props: unknown) {
         super(props);
@@ -106,17 +109,22 @@ export class App extends Component<unknown, AppState> {
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
-            <div>
+            <div className="container">
                 <div>
-                    {this.state.gamePhase}: {this.state.seconds}
+                    <Clock value={this.state.seconds}></Clock>
                 </div>
                 <div>
-                    {scoreUs} | {scoreThem}
+                    <Score value={scoreUs} onClick={() => this.markGoal(0)}></Score>
+                    <Score value={scoreThem} onClick={() => this.markGoal(1)}></Score>
+                </div>
+
+                <hr></hr>
+                <div>
+                    {this.state.gamePhase}
                 </div>
                 <button onClick={() => this.startTimer()}>Start</button>
                 <button onClick={() => this.stopTimer()}>Stop</button>
-                <button onClick={() => this.markGoal(0)}>Goal voor ons!</button>
-                <button onClick={() => this.markGoal(1)}>Goal voor hen...</button>
+   
                 <button onClick={() => this.reset()}>Reset</button>
                 <ul>
                     {events}
