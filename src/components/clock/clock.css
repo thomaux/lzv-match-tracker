@@ -1,3 +1,17 @@
 .clock {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px;
+}
+.time {
     font-size: 4em;
+    width: 190px;
+}
+
+.phase div {
+    color: lightgray;
+}
+
+.phase div.active {
+    color: black
 }

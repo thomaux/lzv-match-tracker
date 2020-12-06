@@ -16,7 +16,7 @@ interface GameEvent {
 }
 
 type GameEventType = 'GOAL_US' | 'GOAL_THEM' | 'PHASE_START' | 'PHASE_END';
-type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
+export type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
 
 export class App extends Component<unknown, AppState> {
     timer: NodeJS.Timeout | null;
@@ -100,35 +100,23 @@ export class App extends Component<unknown, AppState> {
     }
 
     render() {
-        const events = this.state.events.map((v, i) =>
-        (
-            <li key={i}>{v.seconds} {v.type} {v.gamePhase}</li>
-        )
-        );
         const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
             <div className="container">
                 <div>
-                    <Clock value={this.state.seconds}></Clock>
+                    <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
-                <div>
+                <div className="scores">
                     <Score label="Wij" value={scoreUs} onClick={() => this.markGoal(0)}></Score>
+                    <span className="score-divider"></span>
                     <Score label="Zij" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
-
-                <hr></hr>
-                <div>
-                    {this.state.gamePhase}
+                <div className="actions">
+                    <button onClick={() => this.startTimer()}>Start</button>
+                    <button onClick={() => this.reset()}>Reset</button>
                 </div>
-                <button onClick={() => this.startTimer()}>Start</button>
-                <button onClick={() => this.stopTimer()}>Stop</button>
-   
-                <button onClick={() => this.reset()}>Reset</button>
-                <ul>
-                    {events}
-                </ul>
             </div>
         );
     }
