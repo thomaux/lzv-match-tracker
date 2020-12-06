@@ -12,7 +12,7 @@ interface GameEvent {
     type: GameEventType;
 }
 
-type GameEventType = 'GOAL' | 'PHASE_START' | 'PHASE_END';
+type GameEventType = 'GOAL_US' | 'GOAL_THEM' | 'PHASE_START' | 'PHASE_END';
 type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
 
 export class App extends Component<unknown, AppState> {
@@ -82,7 +82,7 @@ export class App extends Component<unknown, AppState> {
         }
     }
 
-    markGoal() {
+    markGoal(team: number) {
         const currentGamePhase = this.state.gamePhase;
         if (!['FIRST', 'SECOND'].includes(currentGamePhase)) {
             return;
@@ -91,8 +91,8 @@ export class App extends Component<unknown, AppState> {
             events: this.state.events.concat([{
                 seconds: this.state.seconds,
                 gamePhase: currentGamePhase,
-                type: 'GOAL'
-            }])
+                type: !team ? 'GOAL_US' : 'GOAL_THEM'
+            }]),
         });
     }
 
@@ -102,14 +102,21 @@ export class App extends Component<unknown, AppState> {
             <li key={i}>{v.seconds} {v.type} {v.gamePhase}</li>
         )
         );
+        const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
+        const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
+
         return (
             <div>
                 <div>
                     {this.state.gamePhase}: {this.state.seconds}
                 </div>
+                <div>
+                    {scoreUs} | {scoreThem}
+                </div>
                 <button onClick={() => this.startTimer()}>Start</button>
                 <button onClick={() => this.stopTimer()}>Stop</button>
-                <button onClick={() => this.markGoal()}>Goal!</button>
+                <button onClick={() => this.markGoal(0)}>Goal voor ons!</button>
+                <button onClick={() => this.markGoal(1)}>Goal voor hen...</button>
                 <button onClick={() => this.reset()}>Reset</button>
                 <ul>
                     {events}
