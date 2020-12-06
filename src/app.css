@@ -21,5 +21,7 @@ body {
 
 .actions {
     margin-top: auto;
-    height: 80px;
+    margin-bottom: 25px;
+    height: 55px;
+    display: flex;
 }

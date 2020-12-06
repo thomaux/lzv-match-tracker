@@ -1,12 +1,17 @@
-import { Component } from 'react';
-import { Clock } from './components/clock/clock';
+import { Component, MouseEvent as ReactMouseEvent } from 'react';
 import './app.css';
+import { Clock } from './components/clock/clock';
 import { Score } from './components/score/score';
 
 interface AppState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
+}
+
+interface AppAction {
+    label: string;
+    action: (event: ReactMouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 interface GameEvent {
@@ -21,6 +26,9 @@ export type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
 export class App extends Component<unknown, AppState> {
     timer: NodeJS.Timeout | null;
     readonly maxSeconds = 1500; // 25mins
+    readonly undoableEventTypes: GameEventType[] = ['GOAL_US', 'GOAL_THEM'];
+    readonly pausedPhases: GamePhase[] = ['START', 'HALF'];
+    readonly inProgressPhases: GamePhase[] = ['FIRST', 'SECOND'];
 
     constructor(props: unknown) {
         super(props);
@@ -34,7 +42,7 @@ export class App extends Component<unknown, AppState> {
 
     startTimer() {
         const currentGamePhase = this.state.gamePhase;
-        if (!['START', 'HALF'].includes(currentGamePhase)) {
+        if (!this.pausedPhases.includes(currentGamePhase)) {
             return;
         }
         const nextGamePhase: GamePhase = currentGamePhase === 'START' ? 'FIRST' : 'SECOND';
@@ -51,7 +59,7 @@ export class App extends Component<unknown, AppState> {
 
     stopTimer() {
         const currentGamePhase = this.state.gamePhase;
-        if (!['FIRST', 'SECOND'].includes(currentGamePhase)) {
+        if (!this.inProgressPhases.includes(currentGamePhase)) {
             return;
         }
         clearInterval(this.timer as NodeJS.Timeout);
@@ -87,7 +95,7 @@ export class App extends Component<unknown, AppState> {
 
     markGoal(team: number) {
         const currentGamePhase = this.state.gamePhase;
-        if (!['FIRST', 'SECOND'].includes(currentGamePhase)) {
+        if (!this.inProgressPhases.includes(currentGamePhase)) {
             return;
         }
         this.setState({
@@ -99,9 +107,52 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
+    undo() {
+        if (!this.isLastEventUndoable()) {
+            return;
+        }
+        this.setState({
+            events: this.state.events.slice(0, -1)
+        });
+    }
+
+    getActions(): AppAction[] {
+        let actions: AppAction[] = [];
+        if (this.pausedPhases.includes(this.state.gamePhase)) {
+            actions.push({
+                label: 'Start',
+                action: this.startTimer.bind(this)
+            });
+        }
+
+        if (this.state.gamePhase !== 'START') {
+            actions.push({
+                label: 'Reset',
+                action: this.reset.bind(this)
+            });
+        }
+
+        if (this.isLastEventUndoable()) {
+            actions.push({
+                label: 'Undo',
+                action: this.undo.bind(this)
+            });
+        }
+        return actions;
+    }
+
+    isLastEventUndoable(): boolean {
+        const events = this.state.events;
+        const lastEvent = events[events.length - 1];
+        return lastEvent && this.undoableEventTypes.includes(lastEvent.type);
+    }
+
     render() {
         const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
+        const actions = this.getActions().map(({ label, action }) => (
+            <button key={label} onClick={action}>{label}</button>
+        ));
 
         return (
             <div className="container">
@@ -114,8 +165,7 @@ export class App extends Component<unknown, AppState> {
                     <Score label="Zij" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
                 <div className="actions">
-                    <button onClick={() => this.startTimer()}>Start</button>
-                    <button onClick={() => this.reset()}>Reset</button>
+                    {actions}
                 </div>
             </div>
         );
