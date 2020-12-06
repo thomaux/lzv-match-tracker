@@ -1,7 +1,7 @@
 import { Component } from 'react';
-import { Clock } from './components/clock';
+import { Clock } from './components/clock/clock';
 import './app.css';
-import { Score } from './components/score';
+import { Score } from './components/score/score';
 
 interface AppState {
     seconds: number;
@@ -114,8 +114,8 @@ export class App extends Component<unknown, AppState> {
                     <Clock value={this.state.seconds}></Clock>
                 </div>
                 <div>
-                    <Score value={scoreUs} onClick={() => this.markGoal(0)}></Score>
-                    <Score value={scoreThem} onClick={() => this.markGoal(1)}></Score>
+                    <Score label="Wij" value={scoreUs} onClick={() => this.markGoal(0)}></Score>
+                    <Score label="Zij" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
 
                 <hr></hr>
