@@ -7,6 +7,7 @@ interface AppState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
+    resetRequested: boolean;
 }
 
 interface GameEvent {
@@ -30,7 +31,8 @@ export class App extends Component<unknown, AppState> {
         this.state = {
             seconds: 0,
             gamePhase: 'START',
-            events: []
+            events: [],
+            resetRequested: false
         };
         this.timer = null;
     }
@@ -68,6 +70,18 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
+    requestReset() {
+        this.setState({
+            resetRequested: true
+        });
+    }
+
+    cancelReset() {
+        this.setState({
+            resetRequested: false
+        });
+    }
+
     reset() {
         if (this.state.gamePhase === 'START') {
             return;
@@ -75,7 +89,8 @@ export class App extends Component<unknown, AppState> {
         this.setState({
             seconds: 0,
             gamePhase: 'START',
-            events: []
+            events: [],
+            resetRequested: false
         });
         clearInterval(this.timer as NodeJS.Timeout);
     }
@@ -118,7 +133,7 @@ export class App extends Component<unknown, AppState> {
     }
 
     renderUndoAction() {
-        if (!this.isLastEventUndoable()) {
+        if (!this.isLastEventUndoable() || this.state.resetRequested) {
             return (
                 <div className="action"></div>
             );
@@ -129,16 +144,18 @@ export class App extends Component<unknown, AppState> {
     }
 
     renderPrimaryAction() {
+        if(this.state.gamePhase === 'FULL' || this.state.resetRequested) {
+            return (
+                <button className="action primary" onClick={() => this.reset()}>Reset</button>
+            );
+        }
+
         if (this.pausedPhases.includes(this.state.gamePhase)) {
             return (
                 <button className="action primary" onClick={() => this.startTimer()}>Start</button>
             );
         }
-        if (this.state.gamePhase === 'FULL') {
-            return (
-                <button className="action primary" onClick={() => this.reset()}>Reset</button>
-            );
-        }
+        
         return (
             <div className="action"></div>
         );
@@ -150,8 +167,15 @@ export class App extends Component<unknown, AppState> {
                 <div className="action"></div>
             );
         }
+
+        if(this.state.resetRequested) {
+            return (
+                <button className="action" onClick={() => this.cancelReset()}>Cancel</button>
+            );
+        }
+
         return (
-            <button className="action" onClick={() => this.reset()}>Reset</button>
+            <button className="action" onClick={() => this.requestReset()}>Reset</button>
         );
     }
 
