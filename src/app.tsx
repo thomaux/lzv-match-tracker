@@ -52,6 +52,7 @@ export class App extends Component<unknown, AppState> {
             }])
         });
         this.timer = setInterval(() => this.tick(), 1000);
+        window.addEventListener('beforeunload', warnForGameInProgress);
     }
 
     stopTimer() {
@@ -93,6 +94,7 @@ export class App extends Component<unknown, AppState> {
             resetRequested: false
         });
         clearInterval(this.timer as NodeJS.Timeout);
+        window.removeEventListener('beforeunload', warnForGameInProgress);
     }
 
     tick() {
@@ -144,7 +146,7 @@ export class App extends Component<unknown, AppState> {
     }
 
     renderPrimaryAction() {
-        if(this.state.gamePhase === 'FULL' || this.state.resetRequested) {
+        if (this.state.gamePhase === 'FULL' || this.state.resetRequested) {
             return (
                 <button className="action primary" onClick={() => this.reset()}>Reset</button>
             );
@@ -155,7 +157,7 @@ export class App extends Component<unknown, AppState> {
                 <button className="action primary" onClick={() => this.startTimer()}>Start</button>
             );
         }
-        
+
         return (
             <div className="action"></div>
         );
@@ -168,7 +170,7 @@ export class App extends Component<unknown, AppState> {
             );
         }
 
-        if(this.state.resetRequested) {
+        if (this.state.resetRequested) {
             return (
                 <button className="action" onClick={() => this.cancelReset()}>Cancel</button>
             );
@@ -182,10 +184,10 @@ export class App extends Component<unknown, AppState> {
     renderActions() {
         return (
             <div className="actions">
-            {this.renderUndoAction()}
-            {this.renderPrimaryAction()}
-            {this.renderResetAction()}
-        </div>
+                {this.renderUndoAction()}
+                {this.renderPrimaryAction()}
+                {this.renderResetAction()}
+            </div>
         );
     }
 
@@ -207,4 +209,12 @@ export class App extends Component<unknown, AppState> {
             </div>
         );
     }
+}
+
+function warnForGameInProgress(event: BeforeUnloadEvent) {
+    // Cancel the event as stated by the standard.
+    event.preventDefault();
+    // Older browsers supported custom message
+    event.returnValue = '';
+    return '';
 }
