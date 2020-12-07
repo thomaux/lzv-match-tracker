@@ -1,4 +1,4 @@
-import { Component, MouseEvent as ReactMouseEvent } from 'react';
+import { Component } from 'react';
 import './app.css';
 import { Clock } from './components/clock/clock';
 import { Score } from './components/score/score';
@@ -7,11 +7,6 @@ interface AppState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
-}
-
-interface AppAction {
-    label: string;
-    action: (event: ReactMouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 interface GameEvent {
@@ -116,43 +111,63 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
-    getActions(): AppAction[] {
-        let actions: AppAction[] = [];
-        if (this.pausedPhases.includes(this.state.gamePhase)) {
-            actions.push({
-                label: 'Start',
-                action: this.startTimer.bind(this)
-            });
-        }
-
-        if (this.state.gamePhase !== 'START') {
-            actions.push({
-                label: 'Reset',
-                action: this.reset.bind(this)
-            });
-        }
-
-        if (this.isLastEventUndoable()) {
-            actions.push({
-                label: 'Undo',
-                action: this.undo.bind(this)
-            });
-        }
-        return actions;
-    }
-
     isLastEventUndoable(): boolean {
         const events = this.state.events;
         const lastEvent = events[events.length - 1];
         return lastEvent && this.undoableEventTypes.includes(lastEvent.type);
     }
 
+    renderUndoAction() {
+        if (!this.isLastEventUndoable()) {
+            return (
+                <div className="action"></div>
+            );
+        }
+        return (
+            <button className="action" onClick={() => this.undo()}>Undo</button>
+        );
+    }
+
+    renderPrimaryAction() {
+        if (this.pausedPhases.includes(this.state.gamePhase)) {
+            return (
+                <button className="action primary" onClick={() => this.startTimer()}>Start</button>
+            );
+        }
+        if (this.state.gamePhase === 'FULL') {
+            return (
+                <button className="action primary" onClick={() => this.reset()}>Reset</button>
+            );
+        }
+        return (
+            <div className="action"></div>
+        );
+    }
+
+    renderResetAction() {
+        if (['START', 'FULL'].includes(this.state.gamePhase)) {
+            return (
+                <div className="action"></div>
+            );
+        }
+        return (
+            <button className="action" onClick={() => this.reset()}>Reset</button>
+        );
+    }
+
+    renderActions() {
+        return (
+            <div className="actions">
+            {this.renderUndoAction()}
+            {this.renderPrimaryAction()}
+            {this.renderResetAction()}
+        </div>
+        );
+    }
+
     render() {
         const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
-        const actions = this.getActions().map(({ label, action }) => (
-            <button key={label} onClick={action}>{label}</button>
-        ));
 
         return (
             <div className="container">
@@ -160,13 +175,11 @@ export class App extends Component<unknown, AppState> {
                     <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
                 <div className="scores">
-                    <Score label="Wij" value={scoreUs} onClick={() => this.markGoal(0)}></Score>
+                    <Score label="Us" value={scoreUs} onClick={() => this.markGoal(0)}></Score>
                     <span className="score-divider"></span>
-                    <Score label="Zij" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
+                    <Score label="Them" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
-                <div className="actions">
-                    {actions}
-                </div>
+                {this.renderActions()}
             </div>
         );
     }
