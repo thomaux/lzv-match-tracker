@@ -16,3 +16,7 @@
 .score:focus {
     outline: none;
 }
+
+.score:active {
+    color: black;
+}
