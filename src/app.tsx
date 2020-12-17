@@ -2,6 +2,7 @@ import { Component } from 'react';
 import './app.css';
 import { Clock } from './components/clock/clock';
 import { Score } from './components/score/score';
+import Div100vh from 'react-div-100vh'
 
 interface AppState {
     seconds: number;
@@ -196,7 +197,7 @@ export class App extends Component<unknown, AppState> {
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
-            <div className="container">
+            <Div100vh className="container">
                 <div>
                     <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
@@ -206,7 +207,7 @@ export class App extends Component<unknown, AppState> {
                     <Score label="Them" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
                 {this.renderActions()}
-            </div>
+            </Div100vh>
         );
     }
 }
