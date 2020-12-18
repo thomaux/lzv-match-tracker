@@ -1,5 +1,5 @@
+import { GamePhase } from '../../models';
 import './clock.css';
-import { GamePhase } from '../../app';
 export interface ClockProps {
     value: number;
     phase: GamePhase;

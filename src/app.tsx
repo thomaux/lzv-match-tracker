@@ -1,31 +1,21 @@
 import { Component } from 'react';
+import Div100vh from 'react-div-100vh';
 import './app.css';
 import { Clock } from './components/clock/clock';
+import { PlayerSelect } from './components/player-select/player-select';
 import { Score } from './components/score/score';
-import Div100vh from 'react-div-100vh'
+import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from './models';
 
 interface AppState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
     resetRequested: boolean;
+    players: Player[];
 }
-
-interface GameEvent {
-    seconds: number;
-    gamePhase: GamePhase;
-    type: GameEventType;
-}
-
-type GameEventType = 'GOAL_US' | 'GOAL_THEM' | 'PHASE_START' | 'PHASE_END';
-export type GamePhase = 'START' | 'FIRST' | 'HALF' | 'SECOND' | 'FULL';
-
 export class App extends Component<unknown, AppState> {
     timer: NodeJS.Timeout | null;
     readonly maxSeconds = 1500; // 25mins
-    readonly undoableEventTypes: GameEventType[] = ['GOAL_US', 'GOAL_THEM'];
-    readonly pausedPhases: GamePhase[] = ['START', 'HALF'];
-    readonly inProgressPhases: GamePhase[] = ['FIRST', 'SECOND'];
 
     constructor(props: unknown) {
         super(props);
@@ -33,14 +23,18 @@ export class App extends Component<unknown, AppState> {
             seconds: 0,
             gamePhase: 'START',
             events: [],
-            resetRequested: false
+            resetRequested: false,
+            players: [{
+                id: '1',
+                name: 'Player 1'
+            }]
         };
         this.timer = null;
     }
 
     startTimer() {
         const currentGamePhase = this.state.gamePhase;
-        if (!this.pausedPhases.includes(currentGamePhase)) {
+        if (!isPausedPhase(currentGamePhase)) {
             return;
         }
         const nextGamePhase: GamePhase = currentGamePhase === 'START' ? 'FIRST' : 'SECOND';
@@ -58,7 +52,7 @@ export class App extends Component<unknown, AppState> {
 
     stopTimer() {
         const currentGamePhase = this.state.gamePhase;
-        if (!this.inProgressPhases.includes(currentGamePhase)) {
+        if (!isInProgressPhase(currentGamePhase)) {
             return;
         }
         clearInterval(this.timer as NodeJS.Timeout);
@@ -107,8 +101,9 @@ export class App extends Component<unknown, AppState> {
     }
 
     markGoal(team: number) {
+        const lastEvent = this.getLastEvent();
         const currentGamePhase = this.state.gamePhase;
-        if (!this.inProgressPhases.includes(currentGamePhase)) {
+        if (!isInProgressPhase(currentGamePhase) || ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
             return;
         }
         this.setState({
@@ -117,6 +112,22 @@ export class App extends Component<unknown, AppState> {
                 gamePhase: currentGamePhase,
                 type: !team ? 'GOAL_US' : 'GOAL_THEM'
             }]),
+        });
+    }
+
+    creditPlayer(playerAction: PlayerAction, playerId: string) {
+        const lastEvent = this.getLastEvent();
+        if (!((playerAction === 'GOAL' && lastEvent.type === 'GOAL_US') || (playerAction === 'ASSIST' && lastEvent.type === 'CREDIT_GOAL'))) {
+            return;
+        }
+
+        this.setState({
+            events: this.state.events.concat([{
+                seconds: lastEvent.seconds,
+                gamePhase: this.state.gamePhase,
+                type: playerAction === 'GOAL' ? 'CREDIT_GOAL' : 'CREDIT_ASSIST',
+                playerId
+            }])
         });
     }
 
@@ -129,10 +140,14 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
-    isLastEventUndoable(): boolean {
+    getLastEvent(): GameEvent {
         const events = this.state.events;
-        const lastEvent = events[events.length - 1];
-        return lastEvent && this.undoableEventTypes.includes(lastEvent.type);
+        return events[events.length - 1];
+    }
+
+    isLastEventUndoable(): boolean {
+        const lastEvent = this.getLastEvent();
+        return lastEvent && isEventUndoable(lastEvent);
     }
 
     renderUndoAction() {
@@ -153,7 +168,7 @@ export class App extends Component<unknown, AppState> {
             );
         }
 
-        if (this.pausedPhases.includes(this.state.gamePhase)) {
+        if (isPausedPhase(this.state.gamePhase)) {
             return (
                 <button className="action primary" onClick={() => this.startTimer()}>Start</button>
             );
@@ -192,6 +207,20 @@ export class App extends Component<unknown, AppState> {
         );
     }
 
+    // FIXME: Allow crediting player when time runs out
+    renderPlayerSelect() {
+        const lastEvent = this.getLastEvent();
+        if (!lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
+            return;
+        }
+
+        const creditFor: PlayerAction = lastEvent.type === 'GOAL_US' ? 'GOAL' : 'ASSIST';
+
+        return (
+            <PlayerSelect players={this.state.players} creditFor={creditFor} onClick={this.creditPlayer.bind(this)}></PlayerSelect>
+        )
+    }
+
     render() {
         const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
@@ -206,6 +235,7 @@ export class App extends Component<unknown, AppState> {
                     <span className="score-divider"></span>
                     <Score label="Them" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
+                {this.renderPlayerSelect()}
                 {this.renderActions()}
             </Div100vh>
         );
