@@ -1,4 +1,4 @@
-import { Player, PlayerAction } from '../../models';
+import { Player, PlayerAction } from '../../../game/models';
 
 export interface PlayerSelectProps {
     creditFor: PlayerAction;

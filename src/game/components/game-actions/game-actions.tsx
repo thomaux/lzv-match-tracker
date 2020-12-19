@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { GamePhase, isPausedPhase } from '../../models';
 
 export type GameActionType = 'START' | 'RESET' | 'UNDO';
@@ -70,10 +71,16 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
         );
     }
 
-    renderResetAction() {
-        if (['START', 'FULL'].includes(this.props.gamePhase)) {
+    renderSecondaryAction() {
+        if (this.props.gamePhase === 'FULL') {
             return (
                 <div className="action"></div>
+            );
+        }
+
+        if(this.props.gamePhase === 'START') {
+            return (
+                <Link to='/players'>Team</Link>
             );
         }
 
@@ -93,7 +100,7 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
             <div className="actions">
                 {this.renderUndoAction()}
                 {this.renderPrimaryAction()}
-                {this.renderResetAction()}
+                {this.renderSecondaryAction()}
             </div>
         );
     }
