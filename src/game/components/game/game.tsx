@@ -1,18 +1,19 @@
+import { Box, Grid } from '@material-ui/core';
 import { Component } from 'react';
-import './game.css';
+import { PlayerSelect } from '../../../player/components/player-select/player-select';
+import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from '../../models';
 import { Clock } from '../clock/clock';
 import { GameActions, GameActionType } from '../game-actions/game-actions';
-import { PlayerSelect } from '../../../player/components/player-select/player-select';
 import { Score } from '../score/score';
-import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from '../../models';
+import './game.css';
 
-interface AppState {
+interface GameState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
     players: Player[];
 }
-export class Game extends Component<unknown, AppState> {
+export class Game extends Component<unknown, GameState> {
     timer: NodeJS.Timeout | null;
     readonly maxSeconds = 1500; // 25mins
 
@@ -117,7 +118,7 @@ export class Game extends Component<unknown, AppState> {
     }
 
     do(actionType: GameActionType) {
-        switch(actionType) {
+        switch (actionType) {
             case 'START':
                 this.startTimer();
                 break;
@@ -171,7 +172,7 @@ export class Game extends Component<unknown, AppState> {
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
-            <div className="container">
+            <Grid container direction='column' alignItems='center' style={{ height: '100%' }} >
                 <div>
                     <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
@@ -181,8 +182,10 @@ export class Game extends Component<unknown, AppState> {
                     <Score label="Them" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
                 {this.renderPlayerSelect()}
-                <GameActions allowUndo={this.isLastEventUndoable()} gamePhase={this.state.gamePhase} execute={this.do.bind(this)} ></GameActions>
-            </div>
+                <Box marginTop="auto" marginBottom="25px" width="100%">
+                    <GameActions allowUndo={this.isLastEventUndoable()} gamePhase={this.state.gamePhase} execute={this.do.bind(this)} ></GameActions>
+                </Box>
+            </Grid>
         );
     }
 }

@@ -1,5 +1,6 @@
+import { Box, Fab, Grid } from '@material-ui/core';
+import { Close, Group, PlayArrow, Restore, Undo } from '@material-ui/icons';
 import { Component } from 'react';
-import { Link } from 'react-router-dom';
 import { GamePhase, isPausedPhase } from '../../models';
 
 export type GameActionType = 'START' | 'RESET' | 'UNDO';
@@ -35,7 +36,7 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
         });
     }
 
-    executeReset(){
+    executeReset() {
         this.setState({
             resetRequested: false
         });
@@ -44,64 +45,74 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
 
     renderUndoAction() {
         if (!this.props.allowUndo || this.state.resetRequested) {
-            return (
-                <div className="action"></div>
-            );
+            return;
         }
         return (
-            <button className="action" onClick={() => this.props.execute('UNDO')}>Undo</button>
+            <Fab size="small" onClick={() => this.props.execute('UNDO')}>
+                <Undo />
+            </Fab>
         );
     }
 
     renderPrimaryAction() {
         if (this.props.gamePhase === 'FULL' || this.state.resetRequested) {
             return (
-                <button className="action primary" onClick={() => this.executeReset()}>Reset</button>
+                <Fab color="secondary" onClick={() => this.executeReset()}>
+                    <Restore />
+                </Fab>
             );
         }
 
         if (isPausedPhase(this.props.gamePhase)) {
             return (
-                <button className="action primary" onClick={() => this.props.execute('START')}>Start</button>
+                <Fab color="primary" onClick={() => this.props.execute('START')}>
+                    <PlayArrow />
+                </Fab>
             );
         }
-
-        return (
-            <div className="action"></div>
-        );
     }
 
     renderSecondaryAction() {
         if (this.props.gamePhase === 'FULL') {
-            return (
-                <div className="action"></div>
-            );
+            return;
         }
 
-        if(this.props.gamePhase === 'START') {
+        if (this.props.gamePhase === 'START') {
             return (
-                <Link to='/players'>Team</Link>
+                <Fab size="small">
+                    <Group />
+                </Fab>
             );
         }
 
         if (this.state.resetRequested) {
             return (
-                <button className="action" onClick={() => this.cancelReset()}>Cancel</button>
+                <Fab size="small" onClick={() => this.cancelReset()}>
+                    <Close />
+                </Fab>
             );
         }
 
         return (
-            <button className="action" onClick={() => this.requestReset()}>Reset</button>
+            <Fab color="secondary" size="small" onClick={() => this.requestReset()}>
+                <Restore />
+            </Fab>
         );
     }
 
     render() {
         return (
-            <div className="actions">
-                {this.renderUndoAction()}
-                {this.renderPrimaryAction()}
-                {this.renderSecondaryAction()}
-            </div>
+            <Grid container direction="row" justify="space-between" alignItems="flex-end">
+                <Box>
+                    {this.renderUndoAction()}
+                </Box>
+                <Box>
+                    {this.renderPrimaryAction()}
+                </Box>
+                <Box>
+                    {this.renderSecondaryAction()}
+                </Box>
+            </Grid>
         );
     }
 

@@ -1,7 +1,4 @@
-body {
-    font: 16px "Century Gothic", Futura, sans-serif;
-    margin: 0;
-}
+
 
 .container {
     display: flex;
@@ -17,29 +14,4 @@ body {
 .score-divider {
     width: 1px;
     background-color: black;
-}
-
-.actions {
-    margin-top: auto;
-    margin-bottom: 25px;
-    height: 90px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 5px;
-}
-
-.actions .action {
-    border-radius: 50%;
-    border: none;
-    width: 60px;
-    height: 60px;
-}
-
-.actions button.primary {
-    font-size: 1.6em;
-    width: 80px;
-    height: 80px;
 }
