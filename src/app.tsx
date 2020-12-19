@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Div100vh from 'react-div-100vh';
 import './app.css';
 import { Clock } from './components/clock/clock';
+import { GameActions, GameActionType } from './components/game-actions/game-actions';
 import { PlayerSelect } from './components/player-select/player-select';
 import { Score } from './components/score/score';
 import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from './models';
@@ -10,7 +11,6 @@ interface AppState {
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
-    resetRequested: boolean;
     players: Player[];
 }
 export class App extends Component<unknown, AppState> {
@@ -23,7 +23,6 @@ export class App extends Component<unknown, AppState> {
             seconds: 0,
             gamePhase: 'START',
             events: [],
-            resetRequested: false,
             players: [{
                 id: '1',
                 name: 'Player 1'
@@ -66,18 +65,6 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
-    requestReset() {
-        this.setState({
-            resetRequested: true
-        });
-    }
-
-    cancelReset() {
-        this.setState({
-            resetRequested: false
-        });
-    }
-
     reset() {
         if (this.state.gamePhase === 'START') {
             return;
@@ -86,7 +73,6 @@ export class App extends Component<unknown, AppState> {
             seconds: 0,
             gamePhase: 'START',
             events: [],
-            resetRequested: false
         });
         clearInterval(this.timer as NodeJS.Timeout);
         window.removeEventListener('beforeunload', warnForGameInProgress);
@@ -131,6 +117,23 @@ export class App extends Component<unknown, AppState> {
         });
     }
 
+    do(actionType: GameActionType) {
+        switch(actionType) {
+            case 'START':
+                this.startTimer();
+                break;
+            case 'RESET':
+                this.reset();
+                break;
+            case 'UNDO':
+                this.undo();
+                break;
+            default:
+                console.error(`Unknown action ${actionType}`);
+                break;
+        }
+    }
+
     undo() {
         if (!this.isLastEventUndoable()) {
             return;
@@ -148,63 +151,6 @@ export class App extends Component<unknown, AppState> {
     isLastEventUndoable(): boolean {
         const lastEvent = this.getLastEvent();
         return lastEvent && isEventUndoable(lastEvent);
-    }
-
-    renderUndoAction() {
-        if (!this.isLastEventUndoable() || this.state.resetRequested) {
-            return (
-                <div className="action"></div>
-            );
-        }
-        return (
-            <button className="action" onClick={() => this.undo()}>Undo</button>
-        );
-    }
-
-    renderPrimaryAction() {
-        if (this.state.gamePhase === 'FULL' || this.state.resetRequested) {
-            return (
-                <button className="action primary" onClick={() => this.reset()}>Reset</button>
-            );
-        }
-
-        if (isPausedPhase(this.state.gamePhase)) {
-            return (
-                <button className="action primary" onClick={() => this.startTimer()}>Start</button>
-            );
-        }
-
-        return (
-            <div className="action"></div>
-        );
-    }
-
-    renderResetAction() {
-        if (['START', 'FULL'].includes(this.state.gamePhase)) {
-            return (
-                <div className="action"></div>
-            );
-        }
-
-        if (this.state.resetRequested) {
-            return (
-                <button className="action" onClick={() => this.cancelReset()}>Cancel</button>
-            );
-        }
-
-        return (
-            <button className="action" onClick={() => this.requestReset()}>Reset</button>
-        );
-    }
-
-    renderActions() {
-        return (
-            <div className="actions">
-                {this.renderUndoAction()}
-                {this.renderPrimaryAction()}
-                {this.renderResetAction()}
-            </div>
-        );
     }
 
     // FIXME: Allow crediting player when time runs out
@@ -236,7 +182,7 @@ export class App extends Component<unknown, AppState> {
                     <Score label="Them" value={scoreThem} onClick={() => this.markGoal(1)}></Score>
                 </div>
                 {this.renderPlayerSelect()}
-                {this.renderActions()}
+                <GameActions allowUndo={this.isLastEventUndoable()} gamePhase={this.state.gamePhase} execute={this.do.bind(this)} ></GameActions>
             </Div100vh>
         );
     }
