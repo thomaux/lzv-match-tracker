@@ -1,7 +1,8 @@
-import { Box, Fab, Grid } from '@material-ui/core';
-import { Close, Group, PlayArrow, Restore, Undo } from '@material-ui/icons';
+import { Fab, Grid } from '@material-ui/core';
+import { Close, PlayArrow, Restore, Undo } from '@material-ui/icons';
 import { Component } from 'react';
 import { GamePhase, isPausedPhase } from '../../models';
+import { ManagePlayersButton } from './manage-players-button';
 
 export type GameActionType = 'START' | 'RESET' | 'UNDO';
 
@@ -43,9 +44,15 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
         this.props.execute('RESET');
     }
 
+    renderActionPlaceHolder() {
+        return (
+            <div style={{ width: '40px' }}></div>
+        );
+    }
+
     renderUndoAction() {
         if (!this.props.allowUndo || this.state.resetRequested) {
-            return;
+            return this.renderActionPlaceHolder();
         }
         return (
             <Fab size="small" onClick={() => this.props.execute('UNDO')}>
@@ -74,14 +81,12 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
 
     renderSecondaryAction() {
         if (this.props.gamePhase === 'FULL') {
-            return;
+            return this.renderActionPlaceHolder();
         }
 
         if (this.props.gamePhase === 'START') {
             return (
-                <Fab size="small">
-                    <Group />
-                </Fab>
+                <ManagePlayersButton></ManagePlayersButton>
             );
         }
 
@@ -103,17 +108,10 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
     render() {
         return (
             <Grid container direction="row" justify="space-between" alignItems="flex-end">
-                <Box>
-                    {this.renderUndoAction()}
-                </Box>
-                <Box>
-                    {this.renderPrimaryAction()}
-                </Box>
-                <Box>
-                    {this.renderSecondaryAction()}
-                </Box>
+                {this.renderUndoAction()}
+                {this.renderPrimaryAction()}
+                {this.renderSecondaryAction()}
             </Grid>
         );
     }
-
 }

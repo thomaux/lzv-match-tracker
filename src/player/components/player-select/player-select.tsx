@@ -1,3 +1,4 @@
+import { List, ListItem, ListItemText, ListSubheader } from '@material-ui/core';
 import { Player, PlayerAction } from '../../../game/models';
 
 export interface PlayerSelectProps {
@@ -8,18 +9,16 @@ export interface PlayerSelectProps {
 
 export function PlayerSelect(props: PlayerSelectProps) {
     const players = props.players.map(p => (
-        <li key={p.id}>
-            <button onClick={() => props.onClick(props.creditFor, p.id)}>{p.name}</button>
-        </li>
+        <ListItem button key={p.id} onClick={() => props.onClick(props.creditFor, p.id)}>
+            <ListItemText primary={p.name}></ListItemText>
+        </ListItem>
     ));
     const title = props.creditFor === 'GOAL' ? 'Who scored?' : 'Who gave the assist?';
 
     return (
-        <div>
-            {title}
-            <ul>
-                {players}
-            </ul>
-        </div>
+        <List>
+            <ListSubheader>{title}</ListSubheader>
+            {players}
+        </List>
     );
 }

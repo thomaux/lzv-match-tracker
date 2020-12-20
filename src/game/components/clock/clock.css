@@ -1,7 +1,6 @@
 .clock {
     display: flex;
     align-items: center;
-    margin-bottom: 25px;
 }
 .time {
     margin-left: 20px;
