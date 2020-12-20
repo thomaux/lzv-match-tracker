@@ -1,5 +1,5 @@
-import { Fab, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, ListSubheader } from '@material-ui/core';
-import { Delete, PersonAdd } from '@material-ui/icons';
+import { Box, Button, Fab, Grid, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, ListSubheader } from '@material-ui/core';
+import { ArrowBackIos, Delete, PersonAdd } from '@material-ui/icons';
 import { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
 import { loadPlayers, savePlayers } from '../../services/player-service';
@@ -13,7 +13,7 @@ export function PlayerList() {
     }
 
     function deletePlayer(playerId: string) {
-        const newPlayers = players.filter(p => p.id !== playerId); 
+        const newPlayers = players.filter(p => p.id !== playerId);
         setPlayers(newPlayers);
         savePlayers(newPlayers);
     }
@@ -30,14 +30,16 @@ export function PlayerList() {
     ));
 
     return (
-        <div className="full-height">
-            <List subheader={<ListSubheader>Player List</ListSubheader>}>
+        <Grid container direction="column" className="full-height">
+            <List subheader={<ListSubheader>Players</ListSubheader>}>
                 {playerListItems}
             </List>
-            <Link to="/">Back</Link>
-            <Fab onClick={addPlayer} color="primary" className="fab">
-                <PersonAdd></PersonAdd>
-            </Fab>
-        </div>
+            <Box display="flex" justifyContent="space-between" marginTop="auto" marginBottom="25px" alignItems="flex-end">
+                <Button component={Link} to="/" startIcon={<ArrowBackIos />}>Back</Button>
+                <Fab onClick={addPlayer} color="primary">
+                    <PersonAdd></PersonAdd>
+                </Fab>
+            </Box>
+        </Grid>
     );
 }

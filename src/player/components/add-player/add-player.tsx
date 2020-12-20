@@ -1,6 +1,7 @@
-import { Button, TextField } from '@material-ui/core';
+import { Box, Button, Grid, TextField } from '@material-ui/core';
+import { ArrowBackIos } from '@material-ui/icons';
 import { ChangeEvent, FormEvent, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { loadPlayers, savePlayers } from '../../services/player-service';
 
 export function AddPlayer() {
@@ -27,9 +28,14 @@ export function AddPlayer() {
     }
 
     return (
-        <form onSubmit={submit}>
-            <TextField name="name" label="Name" onChange={handleInputChange}></TextField>
-            <Button type='submit' color='primary'>Add</Button>
+        <form onSubmit={submit} className="full-height">
+            <Grid container direction="column" className="full-height">
+                <TextField name="name" label="Name" onChange={handleInputChange} fullWidth margin="normal" required></TextField>
+                <Button type='submit' color='primary' variant="contained">Add</Button>
+                <Box display="flex" justifyContent="space-between" marginTop="auto" marginBottom="25px" alignItems="flex-end">
+                    <Button component={Link} to="/players" startIcon={<ArrowBackIos />}>Back</Button>
+                </Box>
+            </Grid>
         </form>
     );
 }

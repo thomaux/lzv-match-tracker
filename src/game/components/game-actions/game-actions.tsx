@@ -1,8 +1,8 @@
-import { Fab, Grid } from '@material-ui/core';
-import { Close, PlayArrow, Restore, Undo } from '@material-ui/icons';
+import { Button, Fab, Grid } from '@material-ui/core';
+import { PlayArrow, Restore } from '@material-ui/icons';
 import { Component } from 'react';
+import { Link } from 'react-router-dom';
 import { GamePhase, isPausedPhase } from '../../models';
-import { ManagePlayersButton } from './manage-players-button';
 
 export type GameActionType = 'START' | 'RESET' | 'UNDO';
 
@@ -46,7 +46,7 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
 
     renderActionPlaceHolder() {
         return (
-            <div style={{ width: '40px' }}></div>
+            <div style={{ width: '64px' }}></div>
         );
     }
 
@@ -55,9 +55,9 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
             return this.renderActionPlaceHolder();
         }
         return (
-            <Fab size="small" onClick={() => this.props.execute('UNDO')}>
-                <Undo />
-            </Fab>
+            <Button onClick={() => this.props.execute('UNDO')}>
+                Undo
+            </Button>
         );
     }
 
@@ -86,22 +86,22 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
 
         if (this.props.gamePhase === 'START') {
             return (
-                <ManagePlayersButton></ManagePlayersButton>
+                <Button component={Link} to="/players">Team</Button>
             );
         }
 
         if (this.state.resetRequested) {
             return (
-                <Fab size="small" onClick={() => this.cancelReset()}>
-                    <Close />
-                </Fab>
+                <Button onClick={() => this.cancelReset()}>
+                    Cancel
+                </Button>
             );
         }
 
         return (
-            <Fab color="secondary" size="small" onClick={() => this.requestReset()}>
-                <Restore />
-            </Fab>
+            <Button color="secondary" onClick={() => this.requestReset()}>
+                Reset
+            </Button>
         );
     }
 

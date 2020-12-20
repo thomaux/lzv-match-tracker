@@ -87,7 +87,7 @@ export class Game extends Component<unknown, GameState> {
     markGoal(team: number) {
         const lastEvent = this.getLastEvent();
         const currentGamePhase = this.state.gamePhase;
-        if (!isInProgressPhase(currentGamePhase) || ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
+        if (!isInProgressPhase(currentGamePhase) || (this.state.players.length && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type))) {
             return;
         }
         this.setState({
@@ -154,7 +154,7 @@ export class Game extends Component<unknown, GameState> {
     // FIXME: Allow crediting player after time runs out
     renderPlayerSelect() {
         const lastEvent = this.getLastEvent();
-        if (!lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
+        if (!this.state.players.length || !lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
             return;
         }
 
@@ -170,7 +170,7 @@ export class Game extends Component<unknown, GameState> {
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
-            <Grid container direction='column' alignItems='center' className='full-height'>
+            <Grid container direction="column" alignItems="center" className='full-height'>
                 <div>
                     <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
