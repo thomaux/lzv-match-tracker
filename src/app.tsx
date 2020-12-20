@@ -7,7 +7,9 @@ import {
     Switch
 } from "react-router-dom";
 import { Game } from './game/components/game/game';
+import { AddPlayer } from './player/components/add-player/add-player';
 import { PlayerList } from './player/components/player-list/player-list';
+import './app.css';
 
 export function App() {
     return (
@@ -18,8 +20,11 @@ export function App() {
                         <Route exact path="/">
                             <Game></Game>
                         </Route>
-                        <Route path="/players">
+                        <Route exact path="/players">
                             <PlayerList></PlayerList>
+                        </Route>
+                        <Route path="/players/new">
+                            <AddPlayer></AddPlayer>
                         </Route>
                     </Switch>
                 </Router>

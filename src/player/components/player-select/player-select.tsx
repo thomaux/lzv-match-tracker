@@ -16,8 +16,7 @@ export function PlayerSelect(props: PlayerSelectProps) {
     const title = props.creditFor === 'GOAL' ? 'Who scored?' : 'Who gave the assist?';
 
     return (
-        <List>
-            <ListSubheader>{title}</ListSubheader>
+        <List subheader={<ListSubheader>{title}</ListSubheader>}>
             {players}
         </List>
     );

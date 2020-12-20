@@ -1,6 +1,7 @@
 import { Box, Grid } from '@material-ui/core';
 import { Component } from 'react';
 import { PlayerSelect } from '../../../player/components/player-select/player-select';
+import { loadPlayers } from '../../../player/services/player-service';
 import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from '../../models';
 import { Clock } from '../clock/clock';
 import { GameActions, GameActionType } from '../game-actions/game-actions';
@@ -23,10 +24,7 @@ export class Game extends Component<unknown, GameState> {
             seconds: 0,
             gamePhase: 'START',
             events: [],
-            players: [{
-                id: '1',
-                name: 'Player 1'
-            }]
+            players: loadPlayers()
         };
         this.timer = null;
     }
@@ -153,7 +151,7 @@ export class Game extends Component<unknown, GameState> {
         return lastEvent && isEventUndoable(lastEvent);
     }
 
-    // FIXME: Allow crediting player when time runs out
+    // FIXME: Allow crediting player after time runs out
     renderPlayerSelect() {
         const lastEvent = this.getLastEvent();
         if (!lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
@@ -172,7 +170,7 @@ export class Game extends Component<unknown, GameState> {
         const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
-            <Grid container direction='column' alignItems='center' style={{ height: '100%' }} >
+            <Grid container direction='column' alignItems='center' className='full-height'>
                 <div>
                     <Clock value={this.state.seconds} phase={this.state.gamePhase}></Clock>
                 </div>
