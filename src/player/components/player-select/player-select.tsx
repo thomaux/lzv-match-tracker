@@ -1,5 +1,4 @@
-import { List, ListItem, ListItemIcon, ListItemText, ListSubheader } from '@material-ui/core';
-import { NavigateNext } from '@material-ui/icons';
+import { List, ListItem, ListItemText, ListSubheader } from '@material-ui/core';
 import { Player, PlayerAction } from '../../../game/models';
 
 export interface PlayerSelectProps {
