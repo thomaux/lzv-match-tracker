@@ -33,7 +33,7 @@ export class Game extends Component<GameProps, GameState> {
         this.state = {
             startTime: 0,
             seconds: 0,
-            gamePhase:  isGameEnded ? 'FULL' : 'START',
+            gamePhase: isGameEnded ? 'FULL' : 'START',
         };
         this.timer = null;
     }
@@ -93,14 +93,11 @@ export class Game extends Component<GameProps, GameState> {
 
     tick() {
         let seconds = Math.floor((Date.now() - this.state.startTime) / 1000);
-        if (this.state.gamePhase === 'SECOND') {
-            seconds += this.maxSeconds;
-        }
-
-        this.setState({ seconds })
-        if (!(seconds % this.maxSeconds)) {
+        if (seconds >= this.maxSeconds) {
+            seconds = this.state.gamePhase === 'FIRST' ? this.maxSeconds : 2 * this.maxSeconds
             this.stopTimer();
         }
+        this.setState({ seconds })
     }
 
     markGoal(team: number) {
