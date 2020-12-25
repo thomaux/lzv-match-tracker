@@ -2,24 +2,20 @@ import { Box, Button, Grid, TextField } from '@material-ui/core';
 import { ArrowBackIos } from '@material-ui/icons';
 import { ChangeEvent, FormEvent, useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { loadPlayers, savePlayers } from '../../services/player-service';
+import { Player } from '../../models/player';
 
-export function AddPlayer() {
-    const players = loadPlayers();
+interface AddPlayerProps {
+    players: Player[];
+    addPlayer: (playerName: string) => void
+}
+
+export function AddPlayer(props: AddPlayerProps) {
     const [name, setName] = useState('');
     const history = useHistory();
 
-    function getNextId(): string {
-        const currentHighestId = players.reduce((currentMax, current) => { return parseInt(currentMax) > parseInt(current.id) ? currentMax : current.id }, '0');
-        return `${parseInt(currentHighestId) + 1}`;
-    }
-
     function submit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        savePlayers(players.concat([{
-            id: getNextId(),
-            name
-        }]));
+        props.addPlayer(name);
         history.push('/players');
     }
 

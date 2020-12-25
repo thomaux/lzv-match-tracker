@@ -1,28 +1,25 @@
 import { Box, Button, Fab, Grid, IconButton, List, ListItem, ListItemSecondaryAction, ListItemText, ListSubheader } from '@material-ui/core';
 import { ArrowBackIos, Delete, PersonAdd } from '@material-ui/icons';
-import { useState } from 'react';
 import { Link, useHistory } from 'react-router-dom';
-import { loadPlayers, savePlayers } from '../../services/player-service';
+import { Player } from '../../models/player';
 
-export function PlayerList() {
-    const [players, setPlayers] = useState(loadPlayers());
+interface PlayerListProps {
+    players: Player[];
+    deletePlayer: (playerId: string) => void;
+}
+
+export function PlayerList(props: PlayerListProps) {
     const history = useHistory()
 
     function addPlayer() {
         history.push('/players/new');
     }
 
-    function deletePlayer(playerId: string) {
-        const newPlayers = players.filter(p => p.id !== playerId);
-        setPlayers(newPlayers);
-        savePlayers(newPlayers);
-    }
-
-    const playerListItems = players.map(p => (
+    const playerListItems = props.players.map(p => (
         <ListItem key={p.id}>
             <ListItemText primary={p.name}></ListItemText>
             <ListItemSecondaryAction>
-                <IconButton onClick={() => deletePlayer(p.id)} color='secondary'>
+                <IconButton onClick={() => props.deletePlayer(p.id)} color='secondary'>
                     <Delete></Delete>
                 </IconButton>
             </ListItemSecondaryAction>

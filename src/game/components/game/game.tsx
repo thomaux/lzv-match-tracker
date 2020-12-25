@@ -1,32 +1,33 @@
 import { Box, Grid } from '@material-ui/core';
 import { Component } from 'react';
 import { PlayerSelect } from '../../../player/components/player-select/player-select';
-import { loadPlayers } from '../../../player/services/player-service';
 import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from '../../models';
 import { Clock } from '../clock/clock';
 import { GameActions, GameActionType } from '../game-actions/game-actions';
 import { Score } from '../score/score';
 import './game.css';
 
+interface GameProps {
+    players: Player[];
+}
 interface GameState {
     startTime: number;
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
-    players: Player[];
 }
-export class Game extends Component<unknown, GameState> {
+
+export class Game extends Component<GameProps, GameState> {
     timer: NodeJS.Timeout | null;
     readonly maxSeconds = 1500; // 25mins
 
-    constructor(props: unknown) {
+    constructor(props: GameProps) {
         super(props);
         this.state = {
             startTime: 0,
             seconds: 0,
             gamePhase: 'START',
-            events: [],
-            players: loadPlayers()
+            events: []
         };
         this.timer = null;
     }
@@ -92,7 +93,7 @@ export class Game extends Component<unknown, GameState> {
     markGoal(team: number) {
         const lastEvent = this.getLastEvent();
         const currentGamePhase = this.state.gamePhase;
-        if (!isInProgressPhase(currentGamePhase) || (this.state.players.length && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type))) {
+        if (!isInProgressPhase(currentGamePhase) || (this.props.players.length && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type))) {
             return;
         }
         this.setState({
@@ -159,14 +160,14 @@ export class Game extends Component<unknown, GameState> {
     // FIXME: Allow crediting player after time runs out
     renderPlayerSelect() {
         const lastEvent = this.getLastEvent();
-        if (!this.state.players.length || !lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
+        if (!this.props.players.length || !lastEvent || !['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type)) {
             return;
         }
 
         const creditFor: PlayerAction = lastEvent.type === 'GOAL_US' ? 'GOAL' : 'ASSIST';
 
         return (
-            <PlayerSelect players={this.state.players} creditFor={creditFor} onClick={this.creditPlayer.bind(this)}></PlayerSelect>
+            <PlayerSelect players={this.props.players} creditFor={creditFor} onClick={this.creditPlayer.bind(this)}></PlayerSelect>
         )
     }
 
