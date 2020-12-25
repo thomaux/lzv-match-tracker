@@ -28,10 +28,12 @@ export class Game extends Component<GameProps, GameState> {
 
     constructor(props: GameProps) {
         super(props);
+        const lastEvent = this.getLastEvent();
+        const isGameEnded = lastEvent && lastEvent.type === 'PHASE_END' && lastEvent.gamePhase === 'SECOND';
         this.state = {
             startTime: 0,
             seconds: 0,
-            gamePhase: 'START',
+            gamePhase:  isGameEnded ? 'FULL' : 'START',
         };
         this.timer = null;
     }
@@ -104,7 +106,7 @@ export class Game extends Component<GameProps, GameState> {
     markGoal(team: number) {
         const lastEvent = this.getLastEvent();
         const currentGamePhase = this.state.gamePhase;
-        if (!isInProgressPhase(currentGamePhase) || (this.props.players.length && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type))) {
+        if (!isInProgressPhase(currentGamePhase) || (this.props.players.length && lastEvent && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent?.type))) {
             return;
         }
         this.props.addEvent({
@@ -116,7 +118,7 @@ export class Game extends Component<GameProps, GameState> {
 
     creditPlayer(playerAction: PlayerAction, playerId: string) {
         const lastEvent = this.getLastEvent();
-        if (!((playerAction === 'GOAL' && lastEvent.type === 'GOAL_US') || (playerAction === 'ASSIST' && lastEvent.type === 'CREDIT_GOAL'))) {
+        if (!lastEvent || !((playerAction === 'GOAL' && lastEvent.type === 'GOAL_US') || (playerAction === 'ASSIST' && lastEvent.type === 'CREDIT_GOAL'))) {
             return;
         }
 
@@ -152,14 +154,14 @@ export class Game extends Component<GameProps, GameState> {
         this.props.undoEvent();
     }
 
-    getLastEvent(): GameEvent {
+    getLastEvent(): GameEvent | undefined {
         const events = this.props.events;
-        return events[events.length - 1];
+        return events.length ? events[events.length - 1] : undefined;
     }
 
     isLastEventUndoable(): boolean {
         const lastEvent = this.getLastEvent();
-        return lastEvent && isEventUndoable(lastEvent);
+        return lastEvent !== undefined && isEventUndoable(lastEvent);
     }
 
     // FIXME: Allow crediting player after time runs out
