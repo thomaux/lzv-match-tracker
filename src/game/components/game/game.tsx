@@ -24,7 +24,7 @@ interface GameState {
 
 export class Game extends Component<GameProps, GameState> {
     timer: NodeJS.Timeout | null;
-    readonly maxSeconds = 10; // 25mins
+    readonly maxSeconds = 1500; // 25mins
 
     constructor(props: GameProps) {
         super(props);

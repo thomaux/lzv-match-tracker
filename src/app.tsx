@@ -65,7 +65,7 @@ export function App() {
                             <AddPlayer players={players} addPlayer={addPlayer}></AddPlayer>
                         </Route>
                         <Route path="/history">
-                            <EventList events={events}></EventList>
+                            <EventList players={players} events={events}></EventList>
                         </Route>
                     </Switch>
                 </Router>
