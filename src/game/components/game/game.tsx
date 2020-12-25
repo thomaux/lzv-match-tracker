@@ -9,6 +9,7 @@ import { Score } from '../score/score';
 import './game.css';
 
 interface GameState {
+    startTime: number;
     seconds: number;
     gamePhase: GamePhase;
     events: Array<GameEvent>;
@@ -21,6 +22,7 @@ export class Game extends Component<unknown, GameState> {
     constructor(props: unknown) {
         super(props);
         this.state = {
+            startTime: 0,
             seconds: 0,
             gamePhase: 'START',
             events: [],
@@ -41,7 +43,8 @@ export class Game extends Component<unknown, GameState> {
                 seconds: this.state.seconds,
                 gamePhase: nextGamePhase,
                 type: 'PHASE_START'
-            }])
+            }]),
+            startTime: Date.now()
         });
         this.timer = setInterval(() => this.tick(), 1000);
         window.addEventListener('beforeunload', warnForGameInProgress);
@@ -59,7 +62,8 @@ export class Game extends Component<unknown, GameState> {
                 seconds: this.state.seconds,
                 gamePhase: currentGamePhase,
                 type: 'PHASE_END'
-            }])
+            }]),
+            startTime: 0
         });
     }
 
@@ -68,6 +72,7 @@ export class Game extends Component<unknown, GameState> {
             return;
         }
         this.setState({
+            startTime: 0,
             seconds: 0,
             gamePhase: 'START',
             events: [],
@@ -77,7 +82,7 @@ export class Game extends Component<unknown, GameState> {
     }
 
     tick() {
-        const seconds = this.state.seconds + 1;
+        const seconds = Math.floor((Date.now() - this.state.startTime)/1000);
         this.setState({ seconds })
         if (!(seconds % this.maxSeconds)) {
             this.stopTimer();
