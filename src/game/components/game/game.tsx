@@ -9,12 +9,15 @@ import './game.css';
 
 interface GameProps {
     players: Player[];
+    events: Array<GameEvent>;
+    addEvent: (e: GameEvent) => void;
+    undoEvent: () => void;
+    clearEvents: () => void;
 }
 interface GameState {
     startTime: number;
     seconds: number;
     gamePhase: GamePhase;
-    events: Array<GameEvent>;
 }
 
 export class Game extends Component<GameProps, GameState> {
@@ -27,7 +30,6 @@ export class Game extends Component<GameProps, GameState> {
             startTime: 0,
             seconds: 0,
             gamePhase: 'START',
-            events: []
         };
         this.timer = null;
     }
@@ -40,14 +42,16 @@ export class Game extends Component<GameProps, GameState> {
         const nextGamePhase: GamePhase = currentGamePhase === 'START' ? 'FIRST' : 'SECOND';
         this.setState({
             gamePhase: nextGamePhase,
-            events: this.state.events.concat([{
-                seconds: this.state.seconds,
-                gamePhase: nextGamePhase,
-                type: 'PHASE_START'
-            }]),
             startTime: Date.now()
         });
+        this.props.addEvent({
+            seconds: this.state.seconds,
+            gamePhase: nextGamePhase,
+            type: 'PHASE_START'
+        });
         this.timer = setInterval(() => this.tick(), 1000);
+        // Clear before adding, to avoid duplicate handlers
+        window.removeEventListener('beforeunload', warnForGameInProgress);
         window.addEventListener('beforeunload', warnForGameInProgress);
     }
 
@@ -59,12 +63,12 @@ export class Game extends Component<GameProps, GameState> {
         clearInterval(this.timer as NodeJS.Timeout);
         this.setState({
             gamePhase: currentGamePhase === 'FIRST' ? 'HALF' : 'FULL',
-            events: this.state.events.concat([{
-                seconds: this.state.seconds,
-                gamePhase: currentGamePhase,
-                type: 'PHASE_END'
-            }]),
             startTime: 0
+        });
+        this.props.addEvent({
+            seconds: this.state.seconds,
+            gamePhase: currentGamePhase,
+            type: 'PHASE_END'
         });
     }
 
@@ -75,15 +79,15 @@ export class Game extends Component<GameProps, GameState> {
         this.setState({
             startTime: 0,
             seconds: 0,
-            gamePhase: 'START',
-            events: [],
+            gamePhase: 'START'
         });
+        this.props.clearEvents();
         clearInterval(this.timer as NodeJS.Timeout);
         window.removeEventListener('beforeunload', warnForGameInProgress);
     }
 
     tick() {
-        const seconds = Math.floor((Date.now() - this.state.startTime)/1000);
+        const seconds = Math.floor((Date.now() - this.state.startTime) / 1000);
         this.setState({ seconds })
         if (!(seconds % this.maxSeconds)) {
             this.stopTimer();
@@ -96,12 +100,10 @@ export class Game extends Component<GameProps, GameState> {
         if (!isInProgressPhase(currentGamePhase) || (this.props.players.length && ['GOAL_US', 'CREDIT_GOAL'].includes(lastEvent.type))) {
             return;
         }
-        this.setState({
-            events: this.state.events.concat([{
-                seconds: this.state.seconds,
-                gamePhase: currentGamePhase,
-                type: !team ? 'GOAL_US' : 'GOAL_THEM'
-            }]),
+        this.props.addEvent({
+            seconds: this.state.seconds,
+            gamePhase: currentGamePhase,
+            type: !team ? 'GOAL_US' : 'GOAL_THEM'
         });
     }
 
@@ -111,13 +113,11 @@ export class Game extends Component<GameProps, GameState> {
             return;
         }
 
-        this.setState({
-            events: this.state.events.concat([{
-                seconds: lastEvent.seconds,
-                gamePhase: this.state.gamePhase,
-                type: playerAction === 'GOAL' ? 'CREDIT_GOAL' : 'CREDIT_ASSIST',
-                playerId
-            }])
+        this.props.addEvent({
+            seconds: lastEvent.seconds,
+            gamePhase: this.state.gamePhase,
+            type: playerAction === 'GOAL' ? 'CREDIT_GOAL' : 'CREDIT_ASSIST',
+            playerId
         });
     }
 
@@ -142,13 +142,11 @@ export class Game extends Component<GameProps, GameState> {
         if (!this.isLastEventUndoable()) {
             return;
         }
-        this.setState({
-            events: this.state.events.slice(0, -1)
-        });
+        this.props.undoEvent();
     }
 
     getLastEvent(): GameEvent {
-        const events = this.state.events;
+        const events = this.props.events;
         return events[events.length - 1];
     }
 
@@ -172,8 +170,8 @@ export class Game extends Component<GameProps, GameState> {
     }
 
     render() {
-        const scoreUs = this.state.events.filter(e => e.type === 'GOAL_US').length;
-        const scoreThem = this.state.events.filter(e => e.type === 'GOAL_THEM').length;
+        const scoreUs = this.props.events.filter(e => e.type === 'GOAL_US').length;
+        const scoreThem = this.props.events.filter(e => e.type === 'GOAL_THEM').length;
 
         return (
             <Grid container direction="column" alignItems="center" className='full-height'>

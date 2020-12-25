@@ -8,12 +8,14 @@ import {
 } from "react-router-dom";
 import './app.css';
 import { Game } from './game/components/game/game';
+import { GameEvent } from './game/models';
 import { AddPlayer } from './player/components/add-player/add-player';
 import { PlayerList } from './player/components/player-list/player-list';
 import { loadPlayers, savePlayers } from './player/services/player-service';
 
 export function App() {
     const [players, setPlayers] = useState(loadPlayers());
+    const [events, setEvents] = useState([] as GameEvent[]);
 
     function getNextId(): string {
         const currentHighestId = players.reduce((currentMax, current) => { return parseInt(currentMax) > parseInt(current.id) ? currentMax : current.id }, '0');
@@ -35,13 +37,25 @@ export function App() {
         savePlayers(newPlayers);
     }
 
+    function addEvent(event: GameEvent) {
+        setEvents(events.concat([event]));
+    }
+
+    function undoEvent() {
+        setEvents(events.slice(0, -1));
+    }
+
+    function clearEvents(){
+        setEvents([]);
+    }
+
     return (
         <Div100vh>
             <Container style={{ height: '100%' }}>
                 <Router>
                     <Switch>
                         <Route exact path="/">
-                            <Game players={players}></Game>
+                            <Game players={players} events={events} addEvent={addEvent} undoEvent={undoEvent} clearEvents={clearEvents}></Game>
                         </Route>
                         <Route exact path="/players">
                             <PlayerList players={players} deletePlayer={deletePlayer}></PlayerList>
