@@ -1,5 +1,5 @@
 import { List, ListItem, ListItemText, ListSubheader } from '@material-ui/core';
-import { Player, PlayerAction } from '../../../game/models';
+import { Player, PlayerAction } from '../../models/player';
 
 export interface PlayerSelectProps {
     creditFor: PlayerAction;

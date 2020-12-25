@@ -7,8 +7,9 @@ import {
     Switch
 } from "react-router-dom";
 import './app.css';
+import { EventList } from './event/components/event-list';
+import { GameEvent } from './event/models/game-event';
 import { Game } from './game/components/game/game';
-import { GameEvent } from './game/models';
 import { AddPlayer } from './player/components/add-player/add-player';
 import { PlayerList } from './player/components/player-list/player-list';
 import { loadPlayers, savePlayers } from './player/services/player-service';
@@ -62,6 +63,9 @@ export function App() {
                         </Route>
                         <Route path="/players/new">
                             <AddPlayer players={players} addPlayer={addPlayer}></AddPlayer>
+                        </Route>
+                        <Route path="/history">
+                            <EventList events={events}></EventList>
                         </Route>
                     </Switch>
                 </Router>

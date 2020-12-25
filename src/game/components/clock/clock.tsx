@@ -1,4 +1,4 @@
-import { GamePhase } from '../../models';
+import { GamePhase } from '../../models/game-phase';
 import './clock.css';
 export interface ClockProps {
     value: number;

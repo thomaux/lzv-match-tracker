@@ -2,7 +2,7 @@ import { Button, Fab, Grid } from '@material-ui/core';
 import { PlayArrow, Restore } from '@material-ui/icons';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { GamePhase, isPausedPhase } from '../../models';
+import { GamePhase, isPausedPhase } from '../../models/game-phase';
 
 export type GameActionType = 'START' | 'RESET' | 'UNDO';
 
@@ -81,7 +81,9 @@ export class GameActions extends Component<GameActionsProps, GameActionsState> {
 
     renderSecondaryAction() {
         if (this.props.gamePhase === 'FULL') {
-            return this.renderActionPlaceHolder();
+            return (
+                <Button component={Link} to="/history">Stats</Button>
+            );
         }
 
         if (this.props.gamePhase === 'START') {

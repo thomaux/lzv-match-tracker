@@ -1,7 +1,9 @@
 import { Box, Grid } from '@material-ui/core';
 import { Component } from 'react';
+import { GameEvent, isEventUndoable } from '../../../event/models/game-event';
 import { PlayerSelect } from '../../../player/components/player-select/player-select';
-import { GameEvent, GamePhase, isEventUndoable, isInProgressPhase, isPausedPhase, Player, PlayerAction } from '../../models';
+import { Player, PlayerAction } from '../../../player/models/player';
+import { GamePhase, isInProgressPhase, isPausedPhase } from '../../models/game-phase';
 import { Clock } from '../clock/clock';
 import { GameActions, GameActionType } from '../game-actions/game-actions';
 import { Score } from '../score/score';
@@ -22,7 +24,7 @@ interface GameState {
 
 export class Game extends Component<GameProps, GameState> {
     timer: NodeJS.Timeout | null;
-    readonly maxSeconds = 1500; // 25mins
+    readonly maxSeconds = 10; // 25mins
 
     constructor(props: GameProps) {
         super(props);
@@ -44,6 +46,7 @@ export class Game extends Component<GameProps, GameState> {
             gamePhase: nextGamePhase,
             startTime: Date.now()
         });
+
         this.props.addEvent({
             seconds: this.state.seconds,
             gamePhase: nextGamePhase,
@@ -87,7 +90,11 @@ export class Game extends Component<GameProps, GameState> {
     }
 
     tick() {
-        const seconds = Math.floor((Date.now() - this.state.startTime) / 1000);
+        let seconds = Math.floor((Date.now() - this.state.startTime) / 1000);
+        if (this.state.gamePhase === 'SECOND') {
+            seconds += this.maxSeconds;
+        }
+
         this.setState({ seconds })
         if (!(seconds % this.maxSeconds)) {
             this.stopTimer();

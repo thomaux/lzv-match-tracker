@@ -1,4 +1,4 @@
-import { GamePhase } from './game-phase';
+import { GamePhase } from '../../game/models/game-phase';
 
 export interface GameEvent {
     seconds: number;
